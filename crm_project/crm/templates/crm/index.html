@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CRM</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .date-time { text-align: right; margin-bottom: 10px; }
+        .stats { display: flex; justify-content: space-around; align-items: center; margin-bottom: 10px; }
+        .stats div { background: #c9e1eb; color: rgb(0, 0, 0); padding: 10px; border-radius: 15px; flex: 1; text-align: center; }
+        .stats div:not(:last-child) { margin-right: 10px; }
+        .form-container { background: #E0E7FF; padding: 20px; border-radius: 20px; margin-bottom: 20px; position: relative; }
+        .form-container form { display: flex; flex-wrap: wrap; gap: 10px; }
+        .form-container form div { display: flex; flex-direction: column; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .actions { display: flex; gap: 10px; }
+        .logo { width: 80px; height: 80px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .header .date-time { flex-grow: 1; text-align: right; }
+        .submit-button-container { position: absolute; bottom: 10px; right: 5px; }
+        .submit-button { background-color: #68c6e6; color: black; border: none; padding: 10px 20px; border-radius: 15px; cursor: pointer; }
+        .deleted { background-color: #ffdddd; }
+
+        body { font-family: Arial, sans-serif; }
+        .error { color: red; font-size: 0.9em; }
+    </style>
+    <script>
+        function updateDateTime() {
+            var now = new Date();
+            var dateTimeString = now.toLocaleString();
+            document.getElementById('currentDateTime').innerText = dateTimeString;
+        }
+        setInterval(updateDateTime, 1000);  // Update every second
+    </script>
+</head>
+<body onload="updateDateTime()">
+    {% load static %}
+    <div class="header">
+        <img src="{% static 'images/logo.png' %}" alt="Logo" class="logo">
+        <h4>CRM FORM</h4>
+        <div class="date-time">
+            <span id="currentDateTime"></span>
+        </div>
+    </div>
+    
+    <div class="stats">
+        <div># Guests: {{ total_guests }}</div>
+        <div># Members: {{ total_members }}</div>
+        <div># Bar: {{ total_bar }}</div>
+        <div># Restaurant: {{ total_restaurant }}</div>
+    </div>
+    
+    <div class="form-container">
+        <form method="post">
+            {% csrf_token %}
+            <div>
+                {{ form.name.label_tag }} {{ form.name }}
+            </div>
+            <div>
+                {{ form.phone.label_tag }} {{ form.phone }}
+            </div>
+            <div>
+                {{ form.member.label_tag }} {{ form.member }}
+            </div>
+            <div>
+                {{ form.location.label_tag }} {{ form.location }}
+            </div>
+            <div>
+                {{ form.num_of_guests.label_tag }} {{ form.num_of_guests }}
+            </div>
+            <div>
+                {{ form.table_no.label_tag }} {{ form.table_no }}
+               
+            </div>
+            <div>
+                {{ form.bar_or_restaurant.label_tag }} {{ form.bar_or_restaurant }}
+            </div>
+            <div class="submit-button-container">
+                <button type="submit" class="submit-button">Submit</button>
+            </div>
+        </form>
+    <div>
+
+    </div>
+    <div class="error">{{ form.name.errors }}</div>
+    <div class="error">{{ form.phone.errors }}</div>
+    <div class="error">{{ form.table_no.errors }}</div>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Action</th>
+                <th>#</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Member</th>
+                <th>Location</th>
+                <th>No. of Guests</th>
+                <th>Table No.</th>
+                <th>Bar / Restaurant</th>
+                <th>Date / Time</th>
+                <th>Edit</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for guest in guests %}
+                <tr class="{% if guest.is_deleted %}deleted{% endif %}">
+                    <td class="actions">
+                        {% if guest.is_deleted %}
+                            <a href="{% url 'revert_guest' guest.id %}">↩️ Revert</a>
+                        {% else %}
+                            <a href="{% url 'delete_guest' guest.id %}">🗑️</a>
+                        {% endif %}
+                    </td>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ guest.name }}</td>
+                    <td>{{ guest.phone }}</td>
+                    <td>{{ guest.member|yesno:"Yes,No" }}</td>
+                    <td>{{ guest.location }}</td>
+                    <td>{{ guest.num_of_guests }}</td>
+                    <td>{{ guest.table_no }}</td>
+                    <td>{{ guest.bar_or_restaurant }}</td>
+                    <td>{{ guest.date_time }}</td>
+                    <td class="actions">
+                        {% if not guest.is_deleted %}
+                            <a href="{% url 'edit_guest' guest.id %}">✏️</a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
